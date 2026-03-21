@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, FONT } from '../config.js'
+import { sfx } from '../audio/SoundManager.js'
 
 export default class StartScene extends Phaser.Scene {
   constructor() {
@@ -136,6 +137,7 @@ export default class StartScene extends Phaser.Scene {
     })
 
     hitArea.on('pointerdown', () => {
+      sfx.unlock()
       this.cameras.main.flash(300, 255, 45, 120)
       this.time.delayedCall(300, () => this.scene.start('GameScene'))
     })

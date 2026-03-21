@@ -55,6 +55,12 @@ export default class RuleList {
     }
   }
 
+  setVisible(v) {
+    this.panel.setVisible(v)
+    this.titleText.setVisible(v)
+    this.textItems.forEach(t => t.setVisible(v))
+  }
+
   destroy() {
     this.textItems.forEach(t => t.destroy())
     this.panel.destroy()

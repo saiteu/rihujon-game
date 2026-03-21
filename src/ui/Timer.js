@@ -72,6 +72,11 @@ export default class Timer {
     this._event.reset({ delay: 100, repeat: this._totalTicks, callback: () => this._tick() })
   }
 
+  // Drain seconds from remaining time (e.g. penalty per click)
+  drain(seconds) {
+    this._tickCount = Math.min(this._totalTicks, this._tickCount + Math.round(seconds * 10))
+  }
+
   stop() {
     this.active = false
     this._event.remove()

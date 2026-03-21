@@ -11,7 +11,7 @@ export default {
       GAME_WIDTH / 2, GAME_HEIGHT / 2,
       GAME_WIDTH, GAME_HEIGHT,
       0x000000, 0,
-    ).setDepth(40)
+    ).setDepth(90)
 
     let active = true
 
@@ -27,7 +27,7 @@ export default {
             targets: overlay,
             alpha: 0,
             duration: 80,
-            delay: Phaser.Math.Between(350, 600),
+            delay: Phaser.Math.Between(600, 1000),
             onComplete: () => {
               if (!active) return
               scene.time.delayedCall(Phaser.Math.Between(2000, 4000), blackout)
@@ -37,7 +37,7 @@ export default {
       })
     }
 
-    scene.time.delayedCall(1500, blackout)
+    scene.time.delayedCall(500, blackout)
 
     return () => {
       active = false

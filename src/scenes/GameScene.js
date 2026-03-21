@@ -24,6 +24,16 @@ export default class GameScene extends Phaser.Scene {
     this.clickValidators = []
     this.transformPointerCoords = null
     this.spawnBias = null
+    // CSS filter accumulator (multiple rules can stack filters)
+    this.cssFilters = new Map()
+    // Progress text override: (clickCount, targetCount) => string | null
+    this.progressOverride = null
+  }
+
+  // Combine all active CSS filters and apply to canvas
+  _updateCSSFilter() {
+    const combined = [...this.cssFilters.values()].join(' ')
+    this.sys.game.canvas.style.filter = combined || ''
   }
 
   create() {
@@ -138,7 +148,7 @@ export default class GameScene extends Phaser.Scene {
     this.waveText.setText(`WAVE ${this.ruleCount + 1}`)
 
     // Timer duration: starts at 10s, -0.5s every 2 rules cleared, minimum 5s
-    const timerDuration = Math.max(5, 10 - Math.floor(this.ruleCount / 2) * 0.5)
+    const timerDuration = Math.max(4, 9 - this.ruleCount * 0.5)
 
     // Show GO! then start task & timer (isTransitioning=false only after GO!)
     showGo(this, () => {
@@ -146,6 +156,7 @@ export default class GameScene extends Phaser.Scene {
       this.isTransitioning = false
       this.task = new ClickTask(this, () => this._onRoundClear(), () => this._onFail())
       this.timer = new Timer(this, timerDuration, () => this._onFail())
+      this.events.emit('timer:created', this.timer)
       this._updateProgress()
     })
   }
@@ -154,7 +165,11 @@ export default class GameScene extends Phaser.Scene {
     if (!this.task) return
     const c = this.task.getClickCount()
     const t = this.task.getTargetCount()
-    this.progressText.setText(`${c} / ${t} クリック`)
+    if (this.progressOverride) {
+      this.progressText.setText(this.progressOverride(c, t))
+    } else {
+      this.progressText.setText(`${c} / ${t} クリック`)
+    }
   }
 
   _onRoundClear() {
@@ -206,10 +221,15 @@ export default class GameScene extends Phaser.Scene {
     if (this.timer) { this.timer.stop() }
     this.ruleManager.cleanup()
 
-    // Restore cursor and reset camera rotation immediately
+    // Restore cursor, camera, and canvas CSS
     this.sys.game.canvas.style.cursor = 'default'
+    this.sys.game.canvas.style.transform = ''
+    this.cssFilters = new Map()
+    this._updateCSSFilter()
     this.tweens.killTweensOf(this.cameras.main)
     this.cameras.main.setRotation(0)
+    this.cameras.main.setZoom(1)
+    this.cameras.main.setScroll(0, 0)
 
     let transitioned = false
     const goToResult = () => {

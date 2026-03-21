@@ -65,11 +65,7 @@ export default class RuleManager {
 
   applyAll(onViolation) {
     this._runCleanups()
-    this.scene.clickValidators = []
-    this.scene.transformPointerCoords = null
-    this.scene.spawnBias = null
-    this.scene.clickTargetOverride = null
-    this.scene.buttonRadiusOverride = null
+    this._resetSceneState()
 
     this._cleanups = this.activeRules.map(rule => {
       const cleanup = rule.apply(this.scene, onViolation)
@@ -79,11 +75,25 @@ export default class RuleManager {
 
   cleanup() {
     this._runCleanups()
-    this.scene.clickValidators = []
-    this.scene.transformPointerCoords = null
-    this.scene.spawnBias = null
-    this.scene.clickTargetOverride = null
-    this.scene.buttonRadiusOverride = null
+    this._resetSceneState()
+  }
+
+  _resetSceneState() {
+    const s = this.scene
+    s.clickValidators = []
+    s.transformPointerCoords = null
+    s.spawnBias = null
+    s.clickTargetOverride = null
+    s.buttonRadiusOverride = null
+    s.progressOverride = null
+    s.cssFilters = new Map()
+    if (s._updateCSSFilter) s._updateCSSFilter()
+    // Reset canvas CSS transforms (safety net on top of individual rule cleanups)
+    s.sys.game.canvas.style.transform = ''
+    // Restore UI visibility in case hide-rules were active
+    if (s.progressText) s.progressText.setVisible(true)
+    if (s.waveText) s.waveText.setVisible(true)
+    if (s.ruleList) s.ruleList.setVisible(true)
   }
 
   _runCleanups() {

@@ -106,6 +106,17 @@ class SoundManager {
     this.muted = !this.muted
     return this.muted
   }
+
+  unlock() {
+    if (this._ctx) {
+      if (this._ctx.state === 'suspended') this._ctx.resume()
+      return
+    }
+    try {
+      this._ctx = new (window.AudioContext || window.webkitAudioContext)()
+      if (this._ctx.state === 'suspended') this._ctx.resume()
+    } catch { /* ignore */ }
+  }
 }
 
 // Singleton

@@ -3,7 +3,7 @@ import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../config.js'
 import { burstParticles } from '../ui/Effects.js'
 import { sfx } from '../audio/SoundManager.js'
 
-export const CLICK_TARGET = 3
+export const CLICK_TARGET = 5
 const BUTTON_RADIUS = 36
 
 // Default spawn area (task frame: center y=310, h=340 → 140 to 480)
