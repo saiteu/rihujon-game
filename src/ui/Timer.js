@@ -1,4 +1,5 @@
 import { COLORS } from '../config.js'
+import { sfx } from '../audio/SoundManager.js'
 
 const TIME_LIMIT = 10
 
@@ -41,11 +42,16 @@ export default class Timer {
     const ratio = this.remaining / TIME_LIMIT
     this.bar.width = 340 * ratio
 
-    // 残り3秒以下で赤
+    // 残り3秒以下で赤 + tick SE（1秒刻みのみ）
     const color = this.remaining <= 3 ? COLORS.neonPink : COLORS.neonCyan
     this.bar.setFillStyle(color)
     this.text.setColor(this.remaining <= 3 ? '#ff2d78' : '#00fff5')
     this.text.setText(`${this.remaining.toFixed(1)}s`)
+    if (this.remaining <= 3 && this.remaining > 0) {
+      const prevSec = Math.ceil(this.remaining + 0.1)
+      const currSec = Math.ceil(this.remaining)
+      if (currSec < prevSec) sfx.tick()
+    }
 
     if (this.remaining <= 0) {
       this.active = false

@@ -4,6 +4,7 @@ export default {
   id: 'screenRotate',
   name: 'クリックするたびに画面が回転する',
   description: 'クリックのたびに15度ずつ傾いていく！',
+  incompatibleWith: ['upsideDown'],
   apply(scene, onViolation) {
     let totalDeg = 0
 

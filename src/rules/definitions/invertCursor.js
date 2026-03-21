@@ -25,9 +25,8 @@ export default {
 
     const onUpdate = () => {
       const ptr = scene.input.activePointer
-      const fx = GAME_WIDTH - ptr.x
-      const fy = GAME_HEIGHT - ptr.y
-      drawCursor(fx, fy)
+      const world = scene.cameras.main.getWorldPoint(ptr.x, ptr.y)
+      drawCursor(GAME_WIDTH - world.x, GAME_HEIGHT - world.y)
     }
 
     scene.events.on('update', onUpdate)

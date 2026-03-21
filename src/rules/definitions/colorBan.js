@@ -4,6 +4,7 @@ export default {
   id: 'colorBan',
   name: '赤いボタンは押してはいけない',
   description: 'ボタンが赤くなったら押すな！押したら即失敗！',
+  incompatibleWith: ['transparent', 'flickerScreen'],
   apply(scene, onViolation) {
     let dangerTimer = null
     let currentRefs = null

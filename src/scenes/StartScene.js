@@ -32,46 +32,49 @@ export default class StartScene extends Phaser.Scene {
   }
 
   _createTitle() {
-    // サブタイトル
-    this.add.text(GAME_WIDTH / 2, 180, '★ RULE CHAOS ★', {
+    const cx = GAME_WIDTH / 2
+
+    // Tagline above
+    this.add.text(cx, 175, '— INSANE RULE STACKING —', {
       fontFamily: 'monospace',
-      fontSize: '13px',
+      fontSize: '11px',
       color: '#ff2d78',
-      letterSpacing: 4,
+      letterSpacing: 3,
     }).setOrigin(0.5)
 
-    // メインタイトル（2行）
-    const title1 = this.add.text(GAME_WIDTH / 2, 230, '理不尽', {
+    // Main title
+    const title = this.add.text(cx, 235, 'CLICK HELL', {
       fontFamily: 'monospace',
-      fontSize: '56px',
+      fontSize: '52px',
       color: '#00fff5',
       fontStyle: 'bold',
-      stroke: '#005566',
-      strokeThickness: 6,
+      stroke: '#003344',
+      strokeThickness: 8,
     }).setOrigin(0.5)
 
-    const title2 = this.add.text(GAME_WIDTH / 2, 295, 'ルール追加系', {
+    // Subtitle
+    const sub = this.add.text(cx, 295, '理不尽ルール追加系', {
       fontFamily: 'monospace',
-      fontSize: '28px',
+      fontSize: '20px',
       color: '#ffffff',
       fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3,
     }).setOrigin(0.5)
 
-    // タイトルの点滅アニメ
     this.tweens.add({
-      targets: title1,
-      alpha: 0.7,
-      duration: 1200,
+      targets: title,
+      alpha: 0.75,
+      duration: 1000,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
     })
 
-    // タイトル2のY揺れ
     this.tweens.add({
-      targets: title2,
+      targets: sub,
       y: 300,
-      duration: 2000,
+      duration: 2200,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
@@ -81,49 +84,46 @@ export default class StartScene extends Phaser.Scene {
   _createDescription() {
     const lines = [
       'クリアするたびに',
-      '理不尽なルールが追加される！',
+      '理不尽なルールが追加されていく！',
       '',
-      'どこまで耐えられるか？',
+      'ルールに耐え続けろ。限界まで。',
     ]
 
     lines.forEach((line, i) => {
-      this.add.text(GAME_WIDTH / 2, 370 + i * 26, line, {
+      this.add.text(GAME_WIDTH / 2, 365 + i * 26, line, {
         fontFamily: 'monospace',
-        fontSize: '15px',
-        color: i === 1 ? '#ffe600' : '#aaaacc',
+        fontSize: '14px',
+        color: i === 1 ? '#ffe600' : i === 3 ? '#ff2d78' : '#aaaacc',
       }).setOrigin(0.5)
     })
   }
 
   _createStartButton() {
     const cx = GAME_WIDTH / 2
-    const cy = 540
+    const cy = 535
 
-    // ボタン背景
-    const bg = this.add.rectangle(cx, cy, 220, 56, COLORS.neonPink, 0.15)
-    const border = this.add.rectangle(cx, cy, 220, 56)
+    const bg = this.add.rectangle(cx, cy, 240, 58, COLORS.neonPink, 0.15)
+    const border = this.add.rectangle(cx, cy, 240, 58)
     border.setStrokeStyle(2, COLORS.neonPink, 1)
 
-    const label = this.add.text(cx, cy, 'START', {
+    const label = this.add.text(cx, cy, 'PLAY', {
       fontFamily: 'monospace',
-      fontSize: '24px',
+      fontSize: '28px',
       color: '#ff2d78',
       fontStyle: 'bold',
-      letterSpacing: 6,
+      letterSpacing: 8,
     }).setOrigin(0.5)
 
-    // 点滅
     this.tweens.add({
       targets: [border, label],
       alpha: 0.3,
-      duration: 800,
+      duration: 750,
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
     })
 
-    // インタラクション
-    const hitArea = this.add.rectangle(cx, cy, 220, 56).setInteractive({ useHandCursor: true })
+    const hitArea = this.add.rectangle(cx, cy, 240, 58).setInteractive({ useHandCursor: true })
 
     hitArea.on('pointerover', () => {
       bg.setFillStyle(COLORS.neonPink, 0.35)
@@ -137,16 +137,14 @@ export default class StartScene extends Phaser.Scene {
 
     hitArea.on('pointerdown', () => {
       this.cameras.main.flash(300, 255, 45, 120)
-      this.time.delayedCall(300, () => {
-        this.scene.start('GameScene')
-      })
+      this.time.delayedCall(300, () => this.scene.start('GameScene'))
     })
 
-    // 下の補足テキスト
-    this.add.text(cx, cy + 50, 'タップ / クリックでスタート', {
+    this.add.text(cx, cy + 48, 'TAP TO START', {
       fontFamily: 'monospace',
-      fontSize: '12px',
-      color: '#666688',
+      fontSize: '11px',
+      color: '#555577',
+      letterSpacing: 3,
     }).setOrigin(0.5)
   }
 }

@@ -2,6 +2,7 @@ export default {
   id: 'transparent',
   name: 'ボタンがほぼ透明になる',
   description: 'ボタンが見えない！感を頼れ！',
+  incompatibleWith: ['colorBan', 'fakeButtons', 'flickerScreen'],
   apply(scene, onViolation) {
     const onSpawned = ({ button, glow, label }) => {
       button.setAlpha(0.1)

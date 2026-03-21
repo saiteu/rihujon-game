@@ -1,5 +1,7 @@
 import Phaser from 'phaser'
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../config.js'
+import { burstParticles } from '../ui/Effects.js'
+import { sfx } from '../audio/SoundManager.js'
 
 export const CLICK_TARGET = 3
 const BUTTON_RADIUS = 36
@@ -41,8 +43,9 @@ export default class ClickTask {
 
     const { x, y } = this._randomPos()
 
-    this.buttonGlow = this.scene.add.circle(x, y, 46, COLORS.neonCyan, 0.15)
-    this.button = this.scene.add.circle(x, y, BUTTON_RADIUS, COLORS.dark)
+    const r = this._radius
+    this.buttonGlow = this.scene.add.circle(x, y, r + 10, COLORS.neonCyan, 0.15)
+    this.button = this.scene.add.circle(x, y, r, COLORS.dark)
     this.button.setStrokeStyle(3, COLORS.neonCyan)
     this.label = this.scene.add.text(x, y, 'CLICK', {
       fontFamily: 'monospace',
@@ -78,17 +81,20 @@ export default class ClickTask {
   }
 
   _transformCoords(pointer) {
+    // Convert screen coords → world coords (fixes camera rotation breaking hit detection)
+    const world = this.scene.cameras.main.getWorldPoint(pointer.x, pointer.y)
+    let { x, y } = world
     if (this.scene.transformPointerCoords) {
-      return this.scene.transformPointerCoords(pointer.x, pointer.y)
+      ({ x, y } = this.scene.transformPointerCoords(x, y))
     }
-    return { x: pointer.x, y: pointer.y }
+    return { x, y }
   }
 
   _handlePointerDown(pointer) {
     if (!this.button) return
     const { x, y } = this._transformCoords(pointer)
     const dist = Phaser.Math.Distance.Between(x, y, this.button.x, this.button.y)
-    if (dist > BUTTON_RADIUS) return
+    if (dist > this._radius) return
 
     // Run validators
     for (const validator of (this.scene.clickValidators || [])) {
@@ -104,7 +110,7 @@ export default class ClickTask {
     if (!this.button) return
     const { x, y } = this._transformCoords(pointer)
     const dist = Phaser.Math.Distance.Between(x, y, this.button.x, this.button.y)
-    const isHover = dist <= BUTTON_RADIUS
+    const isHover = dist <= this._radius
     this.button.setFillStyle(isHover
       ? (this.isDanger ? 0x220011 : 0x003333)
       : COLORS.dark
@@ -113,10 +119,12 @@ export default class ClickTask {
 
   _registerClick(x, y) {
     this.clickCount++
+    sfx.click()
     this.scene.events.emit('task:clicked', { count: this.clickCount, task: this })
     this._spawnClickEffect(x, y)
+    burstParticles(this.scene, x, y, COLORS.neonCyan, 10)
 
-    if (this.clickCount >= CLICK_TARGET) {
+    if (this.clickCount >= this._clickTarget) {
       this._destroyButton()
       this.onComplete()
     } else {
@@ -144,8 +152,16 @@ export default class ClickTask {
     this.label = null
   }
 
+  get _radius() {
+    return this.scene.buttonRadiusOverride || BUTTON_RADIUS
+  }
+
+  get _clickTarget() {
+    return this.scene.clickTargetOverride || CLICK_TARGET
+  }
+
   getClickCount() { return this.clickCount }
-  getTargetCount() { return CLICK_TARGET }
+  getTargetCount() { return this._clickTarget }
 
   destroy() {
     this._destroyButton()

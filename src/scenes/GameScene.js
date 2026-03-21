@@ -5,6 +5,8 @@ import Timer from '../ui/Timer.js'
 import RuleList from '../ui/RuleList.js'
 import RuleManager from '../rules/RuleManager.js'
 import RuleAnnouncer from '../rules/RuleAnnouncer.js'
+import { showViolation, showGo, burstStars } from '../ui/Effects.js'
+import { sfx } from '../audio/SoundManager.js'
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -13,6 +15,7 @@ export default class GameScene extends Phaser.Scene {
 
   init() {
     this.ruleCount = 0
+    this.waveNumber = 0
     this.task = null
     this.timer = null
     this.isFailed = false
@@ -34,7 +37,20 @@ export default class GameScene extends Phaser.Scene {
     this.announcer = new RuleAnnouncer(this)
 
     this.ruleList.setRules([])
+    this._createMuteButton()
     this._startRound()
+  }
+
+  _createMuteButton() {
+    const btn = this.add.text(GAME_WIDTH - 12, 12, '🔊', {
+      fontFamily: 'monospace',
+      fontSize: '18px',
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true }).setDepth(300)
+
+    btn.on('pointerdown', () => {
+      const muted = sfx.toggleMute()
+      btn.setText(muted ? '🔇' : '🔊')
+    })
   }
 
   _createBg() {
@@ -49,7 +65,7 @@ export default class GameScene extends Phaser.Scene {
     this.add.rectangle(cx, 36, GAME_WIDTH, 72, COLORS.dark)
     this.add.rectangle(cx, 72, GAME_WIDTH, 1, COLORS.neonCyan, 0.3)
 
-    this.add.text(cx, 18, '理不尽ルール追加系ゲーム', {
+    this.add.text(cx, 18, 'CLICK HELL', {
       fontFamily: 'monospace',
       fontSize: '12px',
       color: '#444466',
@@ -79,7 +95,7 @@ export default class GameScene extends Phaser.Scene {
 
   _startRound() {
     this.isFailed = false
-    this.isTransitioning = false
+    this.isTransitioning = true  // Stay true during GO! to block spurious violations
 
     // Reset camera
     this.cameras.main.setRotation(0)
@@ -91,11 +107,14 @@ export default class GameScene extends Phaser.Scene {
     // Apply all active rules (resets clickValidators, transformPointerCoords, spawnBias)
     this.ruleManager.applyAll(() => this._onFail())
 
-    // Create task & timer
-    this.task = new ClickTask(this, () => this._onRoundClear(), () => this._onFail())
-    this.timer = new Timer(this, () => this._onFail())
-
-    this._updateProgress()
+    // Show GO! then start task & timer (isTransitioning=false only after GO!)
+    showGo(this, () => {
+      if (this.isFailed) return  // Already failed during GO! animation
+      this.isTransitioning = false
+      this.task = new ClickTask(this, () => this._onRoundClear(), () => this._onFail())
+      this.timer = new Timer(this, () => this._onFail())
+      this._updateProgress()
+    })
   }
 
   _updateProgress() {
@@ -114,23 +133,30 @@ export default class GameScene extends Phaser.Scene {
     this.ruleCount++
     this.ruleBadge.setText(`ルール: ${this.ruleCount}個`)
 
+    sfx.clear()
     this.cameras.main.flash(200, 0, 255, 180)
+    burstStars(this)
     this._showBanner('CLEAR!', '#39ff14', () => {
-      const newRule = this.ruleManager.addRandomRule()
+      this.waveNumber++
+      const { added, removed } = this.ruleManager.addRandomRule(this.waveNumber)
       this.ruleList.setRules(this.ruleManager.getActiveRules())
 
-      if (!newRule) {
-        // All rules used up — keep going
+      if (!added) {
+        // No candidates at all — just continue
         this._startRound()
         return
       }
 
-      this.announcer.announce(newRule, () => this._startRound())
+      if (removed) {
+        this.announcer.announceSwap(removed, added, () => this._startRound())
+      } else {
+        this.announcer.announce(added, () => this._startRound())
+      }
     })
   }
 
   _onFail() {
-    if (this.isFailed || this.isTransitioning) return
+    if (this.isFailed) return
     this.isFailed = true
     this.isTransitioning = true
 
@@ -138,20 +164,33 @@ export default class GameScene extends Phaser.Scene {
     if (this.timer) { this.timer.stop() }
     this.ruleManager.cleanup()
 
-    // Restore cursor in case invertCursor was active
+    // Restore cursor and reset camera rotation immediately
     this.sys.game.canvas.style.cursor = 'default'
+    this.tweens.killTweensOf(this.cameras.main)
+    this.cameras.main.setRotation(0)
 
-    this.cameras.main.shake(400, 0.02)
-    this._showBanner('FAILED...', '#ff2d78', () => {
+    let transitioned = false
+    const goToResult = () => {
+      if (transitioned) return
+      transitioned = true
       this.scene.start('ResultScene', { score: this.ruleCount })
+    }
+
+    showViolation(this, () => {
+      sfx.gameOver()
+      this._showBanner('FAILED...', '#ff2d78', goToResult)
     })
+
+    // Safety fallback: ensure transition even if tween callbacks fail
+    this.time.delayedCall(3500, goToResult)
   }
 
   _showBanner(text, color, onDone) {
     const cx = GAME_WIDTH / 2
     const cy = GAME_HEIGHT / 2
 
-    const overlay = this.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.72).setDepth(100)
+    // Oversized to cover screen even during camera rotation
+    const overlay = this.add.rectangle(cx, cy, GAME_WIDTH * 3, GAME_HEIGHT * 3, 0x000000, 0.72).setDepth(100)
     const label = this.add.text(cx, cy, text, {
       fontFamily: 'monospace',
       fontSize: '48px',
@@ -184,6 +223,6 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update() {
-    this._updateProgress()
+    if (this.task) this._updateProgress()
   }
 }

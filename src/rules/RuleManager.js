@@ -1,6 +1,8 @@
 import Phaser from 'phaser'
 import { RULES } from './definitions/index.js'
 
+export const MAX_ACTIVE_RULES = 5
+
 export default class RuleManager {
   constructor(scene) {
     this.scene = scene
@@ -9,20 +11,65 @@ export default class RuleManager {
     this._cleanups = []
   }
 
-  addRandomRule() {
-    if (this.availableRules.length === 0) return null
-    const idx = Phaser.Math.Between(0, this.availableRules.length - 1)
-    const rule = this.availableRules.splice(idx, 1)[0]
-    this.activeRules.push(rule)
-    return rule
+  // Returns { added, removed } — removed is null if no rotation happened
+  addRandomRule(waveNumber = 1) {
+    const allCandidates = this._getCandidates()
+
+    if (allCandidates.length === 0) return { added: null, removed: null }
+
+    // Every 5th wave: force a hard rule; otherwise pick from non-hard pool
+    const wantsHard = waveNumber % 5 === 0
+    let candidates = wantsHard
+      ? allCandidates.filter(r => r.tier === 'hard')
+      : allCandidates.filter(r => r.tier !== 'hard')
+    if (candidates.length === 0) candidates = allCandidates
+
+    const idx = Phaser.Math.Between(0, candidates.length - 1)
+    const added = candidates[idx]
+
+    // Remove from available pool
+    const avIdx = this.availableRules.indexOf(added)
+    if (avIdx !== -1) this.availableRules.splice(avIdx, 1)
+
+    let removed = null
+
+    if (this.activeRules.length >= MAX_ACTIVE_RULES) {
+      // Rotate: remove a random active rule that won't conflict with incoming
+      const removable = this.activeRules.filter(r => r.id !== added.id)
+      const rmIdx = Phaser.Math.Between(0, removable.length - 1)
+      removed = removable[rmIdx]
+
+      const acIdx = this.activeRules.indexOf(removed)
+      this.activeRules.splice(acIdx, 1)
+      this.availableRules.push(removed) // return to pool
+    }
+
+    this.activeRules.push(added)
+    return { added, removed }
+  }
+
+  // Returns candidates from available pool that won't cause deadlock
+  _getCandidates() {
+    const activeIds = new Set(this.activeRules.map(r => r.id))
+
+    return this.availableRules.filter(rule => {
+      // Check rule's own incompatibilities
+      if (rule.incompatibleWith?.some(id => activeIds.has(id))) return false
+
+      // Check if any active rule lists this rule as incompatible
+      if (this.activeRules.some(r => r.incompatibleWith?.includes(rule.id))) return false
+
+      return true
+    })
   }
 
   applyAll(onViolation) {
     this._runCleanups()
-    // Reset scene-level rule state
     this.scene.clickValidators = []
     this.scene.transformPointerCoords = null
     this.scene.spawnBias = null
+    this.scene.clickTargetOverride = null
+    this.scene.buttonRadiusOverride = null
 
     this._cleanups = this.activeRules.map(rule => {
       const cleanup = rule.apply(this.scene, onViolation)
@@ -35,6 +82,8 @@ export default class RuleManager {
     this.scene.clickValidators = []
     this.scene.transformPointerCoords = null
     this.scene.spawnBias = null
+    this.scene.clickTargetOverride = null
+    this.scene.buttonRadiusOverride = null
   }
 
   _runCleanups() {
@@ -42,7 +91,5 @@ export default class RuleManager {
     this._cleanups = []
   }
 
-  getActiveRules() {
-    return this.activeRules
-  }
+  getActiveRules() { return this.activeRules }
 }
