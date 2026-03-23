@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { GAME_WIDTH, GAME_HEIGHT, COLORS, FONT } from '../config.js'
 import { sfx } from '../audio/SoundManager.js'
+import { t, setLang, getLang } from '../i18n/index.js'
 
 export default class StartScene extends Phaser.Scene {
   constructor() {
@@ -12,6 +13,7 @@ export default class StartScene extends Phaser.Scene {
     this._createTitle()
     this._createDescription()
     this._createStartButton()
+    this._createLangToggle()
   }
 
   _createBackground() {
@@ -36,7 +38,7 @@ export default class StartScene extends Phaser.Scene {
     const cx = GAME_WIDTH / 2
 
     // Tagline above
-    this.add.text(cx, 175, '— INSANE RULE STACKING —', {
+    this.add.text(cx, 175, t('start.tagline'), {
       fontFamily: 'monospace',
       fontSize: '11px',
       color: '#ff2d78',
@@ -54,7 +56,7 @@ export default class StartScene extends Phaser.Scene {
     }).setOrigin(0.5)
 
     // Subtitle
-    const sub = this.add.text(cx, 295, '理不尽ルール追加系', {
+    const sub = this.add.text(cx, 295, t('start.subtitle'), {
       fontFamily: 'monospace',
       fontSize: '20px',
       color: '#ffffff',
@@ -84,10 +86,10 @@ export default class StartScene extends Phaser.Scene {
 
   _createDescription() {
     const lines = [
-      'クリアするたびに',
-      '理不尽なルールが追加されていく！',
-      '',
-      'ルールに耐え続けろ。限界まで。',
+      t('start.desc1'),
+      t('start.desc2'),
+      t('start.desc3'),
+      t('start.desc4'),
     ]
 
     lines.forEach((line, i) => {
@@ -142,11 +144,27 @@ export default class StartScene extends Phaser.Scene {
       this.time.delayedCall(300, () => this.scene.start('GameScene'))
     })
 
-    this.add.text(cx, cy + 48, 'TAP TO START', {
+    this.add.text(cx, cy + 48, t('start.tap'), {
       fontFamily: 'monospace',
       fontSize: '11px',
       color: '#555577',
       letterSpacing: 3,
     }).setOrigin(0.5)
+  }
+
+  _createLangToggle() {
+    const btn = this.add.text(16, 16, t('start.lang'), {
+      fontFamily: 'monospace',
+      fontSize: '13px',
+      color: '#555577',
+    }).setOrigin(0, 0).setInteractive({ useHandCursor: true })
+
+    btn.on('pointerover', () => btn.setStyle({ color: '#aaaacc' }))
+    btn.on('pointerout', () => btn.setStyle({ color: '#555577' }))
+    btn.on('pointerdown', () => {
+      const next = getLang() === 'ja' ? 'en' : 'ja'
+      setLang(next)
+      this.scene.restart()
+    })
   }
 }

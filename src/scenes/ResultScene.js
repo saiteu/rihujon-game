@@ -1,16 +1,20 @@
 import Phaser from 'phaser'
 import { GAME_WIDTH, GAME_HEIGHT, COLORS } from '../config.js'
+import { t, getLang } from '../i18n/index.js'
 
-const MESSAGES = [
-  { min: 0,  text: '即死…\nCLICK HELLの洗礼を受けた', color: '#666688' },
-  { min: 1,  text: 'まだまだ甘い\n地獄はここから始まる', color: '#aaaacc' },
-  { min: 3,  text: '悪くない\n理不尽に慣れてきたか？', color: '#00fff5' },
-  { min: 5,  text: 'なかなかやる\n地獄の住人に片足突っ込んだ', color: '#ffe600' },
-  { min: 8,  text: '化け物か？\nCLICK HELLマスター認定！', color: '#39ff14' },
-  { min: 10, text: '全ルール制覇！！\n地獄を支配した王者👑', color: '#ff2d78' },
-]
+function getMessages() {
+  return [
+    { min: 0,  textKey: 'result.msg0',  color: '#666688' },
+    { min: 1,  textKey: 'result.msg1',  color: '#aaaacc' },
+    { min: 3,  textKey: 'result.msg3',  color: '#00fff5' },
+    { min: 5,  textKey: 'result.msg5',  color: '#ffe600' },
+    { min: 8,  textKey: 'result.msg8',  color: '#39ff14' },
+    { min: 10, textKey: 'result.msg10', color: '#ff2d78' },
+  ]
+}
 
 function getMessage(score) {
+  const MESSAGES = getMessages()
   for (let i = MESSAGES.length - 1; i >= 0; i--) {
     if (score >= MESSAGES[i].min) return MESSAGES[i]
   }
@@ -68,7 +72,7 @@ export default class ResultScene extends Phaser.Scene {
     const panel = this.add.rectangle(cx, 240, 320, 110, COLORS.dark).setAlpha(0)
     panel.setStrokeStyle(2, COLORS.neonCyan, 0.6)
 
-    this.add.text(cx, 205, 'RULES SURVIVED', {
+    this.add.text(cx, 205, t('result.rulesLabel'), {
       fontFamily: 'monospace',
       fontSize: '14px',
       color: '#666688',
@@ -81,7 +85,7 @@ export default class ResultScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0.5).setAlpha(0)
 
-    this.add.text(cx, 285, '個', {
+    this.add.text(cx, 285, t('result.rulesUnit'), {
       fontFamily: 'monospace',
       fontSize: '20px',
       color: '#aaaacc',
@@ -112,7 +116,7 @@ export default class ResultScene extends Phaser.Scene {
     const cx = GAME_WIDTH / 2
     const msg = getMessage(this.score)
 
-    const text = this.add.text(cx, 370, msg.text, {
+    const text = this.add.text(cx, 370, t(msg.textKey), {
       fontFamily: 'monospace',
       fontSize: '18px',
       color: msg.color,
@@ -127,10 +131,10 @@ export default class ResultScene extends Phaser.Scene {
     const cx = GAME_WIDTH / 2
 
     // Share button
-    this._makeButton(cx, 470, 'X(Twitter)でシェア', '#ffe600', '#332200', () => this._share())
+    this._makeButton(cx, 470, t('result.share'), '#ffe600', '#332200', () => this._share())
 
     // Retry button
-    this._makeButton(cx, 550, 'RETRY', '#00fff5', '#003333', () => {
+    this._makeButton(cx, 550, t('result.retry'), '#00fff5', '#003333', () => {
       this.cameras.main.flash(200, 0, 255, 200)
       this.time.delayedCall(200, () => this.scene.start('StartScene'))
     })
@@ -167,7 +171,18 @@ export default class ResultScene extends Phaser.Scene {
 
   _share() {
     const score = this.score
-    const lines = [
+    const isEn = getLang() === 'en'
+    const lines = isEn ? [
+      `[CLICK HELL] Survived ${score} rules!`,
+      '',
+      score === 0 ? 'Instant death... Welcome to CLICK HELL 😇' :
+      score < 3  ? 'Too early for hell...' :
+      score < 6  ? 'Not bad at surviving madness!' :
+      score < 10 ? 'CLICK HELL Master level!' :
+                   'All rules cleared! Ruler of hell 👑',
+      '',
+      '#CLICKHELL #browsergame',
+    ] : [
       `【CLICK HELL】${score}個のルールに耐えた！`,
       '',
       score === 0 ? '即死でした…地獄の洗礼😇' :

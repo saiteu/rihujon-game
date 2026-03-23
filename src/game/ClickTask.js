@@ -22,9 +22,12 @@ export default class ClickTask {
     this._pulse = null
 
     this._ptrDown = (ptr) => this._handlePointerDown(ptr)
+    this._ptrUp   = (ptr) => this._handlePointerUp(ptr)
     this._ptrMove = (ptr) => this._handlePointerMove(ptr)
     scene.input.on('pointerdown', this._ptrDown)
+    scene.input.on('pointerup', this._ptrUp)
     scene.input.on('pointermove', this._ptrMove)
+    this._holdStart = null
 
     this._spawnButton()
   }
@@ -94,15 +97,44 @@ export default class ClickTask {
     if (!this.button) return
     const { x, y } = this._transformCoords(pointer)
     const dist = Phaser.Math.Distance.Between(x, y, this.button.x, this.button.y)
+
+    // Hold mode: track press start, defer click to pointerup
+    if (this.scene.holdMode) {
+      if (dist > this._radius) { this._holdStart = null; return }
+      this._holdStart = { x, y, t: this.scene.time.now }
+      this.button.setFillStyle(0x003322) // visual feedback: "pressing"
+      return
+    }
+
     if (dist > this._radius) return
 
-    // Run validators
+    // Normal mode: run validators and register immediately
     for (const validator of (this.scene.clickValidators || [])) {
       const result = validator({ x, y }, this)
       if (result === 'violation') { this.onFail(); return }
       if (result === 'block') return
     }
 
+    this._registerClick(x, y)
+  }
+
+  _handlePointerUp(_pointer) {
+    if (!this.scene.holdMode || !this._holdStart || !this.button) {
+      this._holdStart = null
+      return
+    }
+    const held = this.scene.time.now - this._holdStart.t
+    const { x, y } = this._holdStart
+    this._holdStart = null
+    this.button.setFillStyle(COLORS.dark)
+
+    if (held < 800) return // Released too early — no violation, just miss
+
+    for (const validator of (this.scene.clickValidators || [])) {
+      const result = validator({ x, y }, this)
+      if (result === 'violation') { this.onFail(); return }
+      if (result === 'block') return
+    }
     this._registerClick(x, y)
   }
 
@@ -166,6 +198,7 @@ export default class ClickTask {
   destroy() {
     this._destroyButton()
     this.scene.input.off('pointerdown', this._ptrDown)
+    this.scene.input.off('pointerup', this._ptrUp)
     this.scene.input.off('pointermove', this._ptrMove)
   }
 }

@@ -83,6 +83,7 @@ export default class RuleManager {
     s.clickValidators = []
     s.transformPointerCoords = null
     s.spawnBias = null
+    s.holdMode = false
     s.clickTargetOverride = null
     s.buttonRadiusOverride = null
     s.progressOverride = null

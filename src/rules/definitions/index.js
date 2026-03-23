@@ -2,7 +2,7 @@
 import screenShake from './screenShake.js'
 import ghostButton from './ghostButton.js'
 import shrinkButton from './shrinkButton.js'
-import colorShift from './colorShift.js'
+// colorShift removed (visual-only, not impactful)
 import movingButton from './movingButton.js'
 import windDrift from './windDrift.js'
 import gravityButton from './gravityButton.js'
@@ -25,18 +25,11 @@ import transparent from './transparent.js'
 import screenRotate from './screenRotate.js'
 import upsideDown from './upsideDown.js'
 import zoomChaos from './zoomChaos.js'
-import colorInvert from './colorInvert.js'
+// colorInvert removed (color-only rule)
 import mirrorFlip from './mirrorFlip.js'
 
 // ── New easy rules ─────────────────────────────
-import grayscale from './grayscale.js'
-import sepia from './sepia.js'
-import vividColors from './vividColors.js'
-import dimScreen from './dimScreen.js'
-import brightScreen from './brightScreen.js'
-import highContrast from './highContrast.js'
-import lowContrast from './lowContrast.js'
-import hueShift from './hueShift.js'
+// grayscale, sepia, vividColors, dimScreen, brightScreen, highContrast, lowContrast, hueShift removed (color-only rules)
 import bigButton from './bigButton.js'
 import spinButton from './spinButton.js'
 import bounceButton from './bounceButton.js'
@@ -61,9 +54,7 @@ import hideWave from './hideWave.js'
 import hideRuleList from './hideRuleList.js'
 import scanlines from './scanlines.js'
 import vignette from './vignette.js'
-import blueOverlay from './blueOverlay.js'
-import redOverlay from './redOverlay.js'
-import warmFilter from './warmFilter.js'
+// blueOverlay, redOverlay, warmFilter removed (color-only rules)
 import oneMoreClick from './oneMoreClick.js'
 import oneLessClick from './oneLessClick.js'
 import slowAppear from './slowAppear.js'
@@ -75,7 +66,7 @@ import spinCamera from './spinCamera.js'
 import strongBlur from './strongBlur.js'
 import cameraWander from './cameraWander.js'
 import rapidZoomPulse from './rapidZoomPulse.js'
-import invertPulse from './invertPulse.js'
+// invertPulse removed (color-only rule)
 import flashWhite from './flashWhite.js'
 import mirrorVertical from './mirrorVertical.js'
 import doubleMirror from './doubleMirror.js'
@@ -102,15 +93,20 @@ import nineClicks from './nineClicks.js'
 import randomRadiusPerClick from './randomRadiusPerClick.js'
 import dangerZone from './dangerZone.js'
 
+// ── New gameplay-changing rules ─────────────────
+import holdToClick from './holdToClick.js'
+import blindClick from './blindClick.js'
+import chaosMode from './chaosMode.js'
+import rageMode from './rageMode.js'
+
 function easy(rule) { return { ...rule, tier: 'easy' } }
 function hard(rule) { return { ...rule, tier: 'hard' } }
 
 export const RULES = [
-  // ── Easy (52 total) ───────────────────────────
+  // ── Easy (40 total) ───────────────────────────
   easy(screenShake),
   easy(ghostButton),
   easy(shrinkButton),
-  easy(colorShift),
   easy(movingButton),
   easy(windDrift),
   easy(gravityButton),
@@ -119,14 +115,6 @@ export const RULES = [
   easy(earlyClickBan),
   easy(zoomWave),
   easy(tinyButton),
-  easy(grayscale),
-  easy(sepia),
-  easy(vividColors),
-  easy(dimScreen),
-  easy(brightScreen),
-  easy(highContrast),
-  easy(lowContrast),
-  easy(hueShift),
   easy(bigButton),
   easy(spinButton),
   easy(bounceButton),
@@ -151,15 +139,12 @@ export const RULES = [
   easy(hideRuleList),
   easy(scanlines),
   easy(vignette),
-  easy(blueOverlay),
-  easy(redOverlay),
-  easy(warmFilter),
   easy(oneMoreClick),
   easy(oneLessClick),
   easy(slowAppear),
   easy(rainbowBorder),
   easy(reverseTimerColor),
-  // ── Hard (46 total) ───────────────────────────
+  // ── Hard (44 + new gameplay rules) ───────────
   hard(teleportButton),
   hard(timeLimit5s),
   hard(manyClicks),
@@ -174,13 +159,11 @@ export const RULES = [
   hard(screenRotate),
   hard(upsideDown),
   hard(zoomChaos),
-  hard(colorInvert),
   hard(mirrorFlip),
   hard(spinCamera),
   hard(strongBlur),
   hard(cameraWander),
   hard(rapidZoomPulse),
-  hard(invertPulse),
   hard(flashWhite),
   hard(mirrorVertical),
   hard(doubleMirror),
@@ -206,4 +189,8 @@ export const RULES = [
   hard(nineClicks),
   hard(randomRadiusPerClick),
   hard(dangerZone),
+  hard(holdToClick),
+  hard(blindClick),
+  hard(chaosMode),
+  hard(rageMode),
 ]

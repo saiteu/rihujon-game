@@ -7,6 +7,7 @@ import RuleManager from '../rules/RuleManager.js'
 import RuleAnnouncer from '../rules/RuleAnnouncer.js'
 import { showViolation, showGo, burstStars } from '../ui/Effects.js'
 import { sfx } from '../audio/SoundManager.js'
+import { t as tr } from '../i18n/index.js'
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -24,6 +25,7 @@ export default class GameScene extends Phaser.Scene {
     this.clickValidators = []
     this.transformPointerCoords = null
     this.spawnBias = null
+    this.holdMode = false
     // CSS filter accumulator (multiple rules can stack filters)
     this.cssFilters = new Map()
     // Progress text override: (clickCount, targetCount) => string | null
@@ -102,7 +104,7 @@ export default class GameScene extends Phaser.Scene {
       color: '#444466',
     }).setOrigin(0.5)
 
-    this.ruleBadge = this.add.text(cx, 48, 'ルール: 0個', {
+    this.ruleBadge = this.add.text(cx, 48, tr('game.rules', 0), {
       fontFamily: 'monospace',
       fontSize: '20px',
       color: '#00fff5',
@@ -168,7 +170,7 @@ export default class GameScene extends Phaser.Scene {
     if (this.progressOverride) {
       this.progressText.setText(this.progressOverride(c, t))
     } else {
-      this.progressText.setText(`${c} / ${t} クリック`)
+      this.progressText.setText(tr('game.progress', c, t))
     }
   }
 
@@ -179,7 +181,7 @@ export default class GameScene extends Phaser.Scene {
     this.timer.stop()
     this.ruleManager.cleanup()
     this.ruleCount++
-    this.ruleBadge.setText(`ルール: ${this.ruleCount}個`)
+    this.ruleBadge.setText(tr('game.rules', this.ruleCount))
 
     sfx.clear()
     this.cameras.main.flash(200, 0, 255, 180)
@@ -261,7 +263,7 @@ export default class GameScene extends Phaser.Scene {
       strokeThickness: 6,
     }).setOrigin(0.5).setScale(0).setDepth(101)
 
-    const sub = this.add.text(cx, cy + 24, '難易度上昇中...', {
+    const sub = this.add.text(cx, cy + 24, tr('game.hardWarningDesc'), {
       fontFamily: 'monospace',
       fontSize: '16px',
       color: '#ffe600',

@@ -1,5 +1,6 @@
 import { GAME_WIDTH, GAME_HEIGHT } from '../config.js'
 import { sfx } from '../audio/SoundManager.js'
+import { t, tRule } from '../i18n/index.js'
 
 export default class RuleAnnouncer {
   constructor(scene) {
@@ -12,14 +13,14 @@ export default class RuleAnnouncer {
 
     const overlay = this.scene.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.88).setDepth(200)
 
-    const tag = this.scene.add.text(cx, cy - 100, '⚡ NEW RULE ADDED ⚡', {
+    const tag = this.scene.add.text(cx, cy - 100, t('announce.newRule'), {
       fontFamily: 'monospace',
       fontSize: '14px',
       color: '#ffe600',
       letterSpacing: 3,
     }).setOrigin(0.5).setAlpha(0).setDepth(201)
 
-    const name = this.scene.add.text(cx, cy - 30, rule.name, {
+    const name = this.scene.add.text(cx, cy - 30, tRule(rule).name, {
       fontFamily: 'monospace',
       fontSize: '24px',
       color: '#ff2d78',
@@ -28,7 +29,7 @@ export default class RuleAnnouncer {
       align: 'center',
     }).setOrigin(0.5).setScale(0).setDepth(201)
 
-    const desc = this.scene.add.text(cx, cy + 50, rule.description, {
+    const desc = this.scene.add.text(cx, cy + 50, tRule(rule).description, {
       fontFamily: 'monospace',
       fontSize: '15px',
       color: '#aaaacc',
@@ -36,7 +37,7 @@ export default class RuleAnnouncer {
       align: 'center',
     }).setOrigin(0.5).setAlpha(0).setDepth(201)
 
-    const tap = this.scene.add.text(cx, cy + 120, 'タップで続ける', {
+    const tap = this.scene.add.text(cx, cy + 120, t('announce.tap'), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#444466',
@@ -75,14 +76,14 @@ export default class RuleAnnouncer {
 
     const overlay = this.scene.add.rectangle(cx, cy, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.88).setDepth(200)
 
-    const tag = this.scene.add.text(cx, cy - 120, '🔄 RULE ROTATION', {
+    const tag = this.scene.add.text(cx, cy - 120, t('announce.swap'), {
       fontFamily: 'monospace',
       fontSize: '14px',
       color: '#ffe600',
       letterSpacing: 3,
     }).setOrigin(0.5).setAlpha(0).setDepth(201)
 
-    const removedLabel = this.scene.add.text(cx, cy - 70, `❌ ${removed.name}`, {
+    const removedLabel = this.scene.add.text(cx, cy - 70, `❌ ${tRule(removed).name}`, {
       fontFamily: 'monospace',
       fontSize: '16px',
       color: '#666688',
@@ -97,7 +98,7 @@ export default class RuleAnnouncer {
       color: '#444466',
     }).setOrigin(0.5).setAlpha(0).setDepth(201)
 
-    const addedLabel = this.scene.add.text(cx, cy + 30, `⚡ ${added.name}`, {
+    const addedLabel = this.scene.add.text(cx, cy + 30, `⚡ ${tRule(added).name}`, {
       fontFamily: 'monospace',
       fontSize: '22px',
       color: '#ff2d78',
@@ -106,7 +107,7 @@ export default class RuleAnnouncer {
       align: 'center',
     }).setOrigin(0.5).setScale(0).setDepth(201)
 
-    const desc = this.scene.add.text(cx, cy + 90, added.description, {
+    const desc = this.scene.add.text(cx, cy + 90, tRule(added).description, {
       fontFamily: 'monospace',
       fontSize: '14px',
       color: '#aaaacc',
@@ -114,7 +115,7 @@ export default class RuleAnnouncer {
       align: 'center',
     }).setOrigin(0.5).setAlpha(0).setDepth(201)
 
-    const tap = this.scene.add.text(cx, cy + 140, 'タップで続ける', {
+    const tap = this.scene.add.text(cx, cy + 140, t('announce.tap'), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#444466',
